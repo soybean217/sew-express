@@ -23,41 +23,46 @@ wx.ready(function() {
 
   document.title = $('#textareaNote').val()
 
-  document.querySelector('#inputTextContent').oninput = function() {
-    modifyTag = new Date().getTime()
-    var editInfo = {
-      content: $('#inputTextContent').val(),
-      id: getUrlParam('id'),
-      modifyTag: modifyTag,
-    };
-    // document.title = $('#textareaNote').val()
-    // console.log(noteInfo);
-    $('#modifyStatus').html('保存中...')
-    $.ajax({
-      url: "../ajax/editContentAjax",
-      type: "post",
-      contentType: "application/json",
-      data: JSON.stringify(noteInfo),
-      dateType: "json",
-      success: function(result) {
-        var rev = JSON.parse(result);
-        if (rev.status == 'ok') {
-          if (rev.modifyTag == modifyTag) {
-            $('#modifyStatus').html('已保存')
-            refreshTitle()
-          }
-        } else {
-          console.log(rev)
-        }
-      },
-    });
-  };
+  // document.querySelector('#inputTextContent').oninput = editContent('#inputTextContent', 'orderByCustomer', 'textContent')
+  // document.querySelector('#inputTextContent').oninput = test
 
   registerPreviewImage()
 
   refreshTitle()
 
 });
+
+function editContent(viewId, table, item) {
+  modifyTag = new Date().getTime()
+  var editInfo = {
+    value: $(viewId).val(),
+    id: getUrlParam('id'),
+    modifyTag: modifyTag,
+    table: table,
+    item: item,
+  };
+  // document.title = $('#textareaNote').val()
+  console.log(editInfo);
+  $('#modifyStatus').html('保存中...')
+  $.ajax({
+    url: "../ajax/editValueAjax",
+    type: "post",
+    contentType: "application/json",
+    data: JSON.stringify(editInfo),
+    dateType: "json",
+    success: function(result) {
+      var rev = JSON.parse(result);
+      if (rev.status == 'ok') {
+        if (rev.modifyTag == modifyTag) {
+          $('#modifyStatus').html('已保存')
+          refreshTitle()
+        }
+      } else {
+        console.log(rev)
+      }
+    },
+  });
+};
 
 function refreshTitle() {
   function shareData(act) {
