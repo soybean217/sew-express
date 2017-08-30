@@ -580,6 +580,20 @@ function listOrderByCustomerAjax(req, res) {
 	});
 }
 
+function tailorAjax(req, res) {
+	poolConfig.query("SELECT * FROM  tailors WHERE openId =?", [req.session.wechatBase.openid], function(err, rows, fields) {
+		if (err) {
+			throw err;
+		} else {
+			if (rows.length > 0 && rows[0].machinePic) {
+				rows[0].machinePic = CONFIG.QCLOUD_PARA.THUMBNAILS_DOMAIN + rows[0].machinePic
+			}
+			res.send(JSON.stringify(rows))
+			res.end()
+		}
+	});
+}
+
 var WXPay = require('weixin-pay');
 
 function createUnifiedOrderAjax(req, res) {
@@ -735,14 +749,64 @@ function picUploadAjax(req, res) {
 			case "customerUploadOriginPic":
 				customerUploadOriginPic();
 				break;
+			case "tailorMachinePic":
+				tailorMachinePic();
+				break;
 			default:
 				// ...
 		}
 	}
 
+	function tailorMachinePic() {
+		var currentTime = ctime.getTime() / 1000
+		poolConfig.query("select machinePic from tailors where openid=?", [req.session.wechatBase.openid], function(err, rows, fields) {
+			if (err) {
+				throw err;
+			} else {
+				if (rows.length > 0) {
+					poolConfig.query("update tailors set machinePic=?,lastModifyTime=? where openid=?", [keyNames[0], currentTime, req.session.wechatBase.openid], function(err, result, fields) {
+						if (result.constructor.name == 'OkPacket') {
+							var sendContent = '{"status":"ok","picUrl":"' + CONFIG.QCLOUD_PARA.THUMBNAILS_DOMAIN + keyNames[0] + '"}'
+							logger.debug(sendContent)
+							res.send(sendContent);
+							res.end()
+							if (rows[0].machinePic) {
+								cos.deleteObject({
+									Bucket: CONFIG.QCLOUD_PARA.COS.Bucket,
+									Region: CONFIG.QCLOUD_PARA.COS.Region,
+									Key: rows[0].machinePic,
+								}, function(err, data) {
+									if (err) {
+										return logger.error(err);
+									}
+									logger.debug(JSON.stringify(data, null, '  '));
+								});
+							}
+						} else {
+							logger.error('error tailorMachinePic:')
+							logger.error(result)
+						}
+					})
+				} else {
+					poolConfig.query("insert tailors (machinePic,openId,createTime,lastModifyTime) values (?,?,?,?)", [keyNames[0], req.session.wechatBase.openid, currentTime, currentTime], function(err, result, fields) {
+						if (result.constructor.name == 'OkPacket') {
+							var sendContent = '{"status":"ok","picUrl":"' + CONFIG.QCLOUD_PARA.THUMBNAILS_DOMAIN + keyNames[0] + '"}'
+							logger.debug(sendContent)
+							res.send(sendContent);
+							res.end()
+						} else {
+							logger.error('error tailorMachinePic:')
+							logger.error(result)
+						}
+					})
+				}
+			}
+		});
+	};
+
 	function customerUploadOriginPic() {
 		var createTime = ctime.getTime() / 1000
-		poolConfig.query("insert orders (createTime,lastModifyTime,originPic,customerOpenId) values(?,?,?)", [createTime, createTime, keyNames[0], req.session.wechatBase.openid], function(err, rows, fields) {
+		poolConfig.query("insert orders (createTime,lastModifyTime,originPic,customerOpenId) values(?,?,?,?)", [createTime, createTime, keyNames[0], req.session.wechatBase.openid], function(err, rows, fields) {
 			if (err) {
 				throw err;
 			} else {
@@ -787,6 +851,7 @@ app.get(CONFIG.DIR_FIRST + '/page/entanceTailor', entanceTailor);
 app.post(CONFIG.DIR_FIRST + '/ajax/picUploadAjax', jsonParser, picUploadAjax);
 app.post(CONFIG.DIR_FIRST + '/ajax/editValueAjax', jsonParser, editValueAjax);
 app.get(CONFIG.DIR_FIRST + '/ajax/listOrderByCustomerAjax', listOrderByCustomerAjax);
+app.get(CONFIG.DIR_FIRST + '/ajax/tailorAjax', tailorAjax);
 app.get(CONFIG.DIR_FIRST + '/ajax/createUnifiedOrderAjax', createUnifiedOrderAjax);
 
 // console.log(sign(poolConfig, 'http://example.com'));

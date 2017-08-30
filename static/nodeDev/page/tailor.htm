@@ -1,7 +1,7 @@
 <script src="signWechat.js"></script>
 <head>
 	<meta charset="utf-8">
-	<title>绣花机主资料</title>
+	<title>机主资料</title>
 	<!-- 	<META HTTP-EQUIV="Cache-Control" CONTENT="no-cache,no-store, must-revalidate">
 	<META HTTP-EQUIV="pragma" CONTENT="no-cache">
 	<META HTTP-EQUIV="expires" CONTENT="0"> -->
@@ -11,32 +11,40 @@
 </head>
 <body ontouchstart="">
 	<div class="container" id="container">
-		<div class="page__hd">
-			<h1 class="page__title">状态：资料完善中</h1>
-		</div>
-		<div class="page__hd">
-			<div id="previewImage" style="text-align: center;">
-				<img src="{{coverPicUrl}}">
-			</div>
-			<a href="javascript:;" class="weui-btn weui-btn_primary" id="chooseImageNewCover">拍照或从相册上传绣花机照片</a>
-		</div>
-		<div class="weui-cells__title">绣花机型号</div>
-		<div class="weui-cells">
-			<div class="weui-cell">
-				<div class="weui-cell__bd">
-					<input class="weui-input" id="inputMobile" maxlength="20" type="text" placeholder="请输入绣花机型号" value="{{mobile}}"/>
+		<div class="weui-tab">
+			<div class="weui-tab__panel">
+				<div class="page__hd">
+					<h1 class="page__title" id="tailorState">状态：资料完善中</h1>
+				</div>
+				<div class="page__hd">
+					<article class="weui-article">
+						<div id="previewImage" style="text-align: center;">
+							<img src="{{coverPicUrl}}">
+						</div>
+					</article>
+					<a href="javascript:;" class="weui-btn weui-btn_primary" id="chooseImage">拍照或从相册上传绣花机照片</a>
+				</div>
+				<div class="weui-cells__title">绣花机品牌和型号</div>
+				<div class="weui-cells">
+					<div class="weui-cell">
+						<div class="weui-cell__bd">
+							<input class="weui-input" id="inputMobile" maxlength="20" type="text" placeholder="请输入绣花机品牌和型号" value=""/>
+						</div>
+					</div>
+				</div>
+				<div class="weui-cells__title">手机号码</div>
+				<div class="weui-cells">
+					<div class="weui-cell">
+						<div class="weui-cell__bd">
+							<input class="weui-input" id="inputMobile" maxlength="20" type="text" placeholder="请输入手机号码" value=""/>
+						</div>
+					</div>
 				</div>
 			</div>
-		</div>
-		<div class="weui-cells__title">手机号码</div>
-		<div class="weui-cells">
-			<div class="weui-cell">
-				<div class="weui-cell__bd">
-					<input class="weui-input" id="inputMobile" maxlength="20" type="text" placeholder="请输入手机号码" value="{{mobile}}"/>
-				</div>
+			<div class="weui-tabbar">
+				<div class="weui-cells__tips" id="modifyStatus"></div><a href="javascript:showShareTip();" class="weui-btn weui-btn_primary">分享</a><div class="weui-cells__tips"></div><a href="javascript:confirmClick();" class="weui-btn weui-btn_primary">确定</a>
 			</div>
 		</div>
-		<a href="javascript:showShareTip();" class="weui-btn weui-btn_primary" id="submit">提交</a>
 	</div>
 	<div class="js_dialog" id="iosDialog2" style="display: none;">
 		<div class="weui-mask"></div>
@@ -48,13 +56,13 @@
 		</div>
 	</div>
 	<!-- loading toast -->
-	<!-- 	<div id="loadingToast" style="display:inline;">
-			<div class="weui-mask_transparent"></div>
-			<div class="weui-toast">
-								<i class="weui-loading weui-icon_toast"></i>
-								<p class="weui-toast__content">数据加载中</p>
-			</div>
-	</div> -->
+	<div id="loadingToast" style="display:inline;">
+		<div class="weui-mask_transparent"></div>
+		<div class="weui-toast">
+			<i class="weui-loading weui-icon_toast"></i>
+			<p class="weui-toast__content">数据加载中</p>
+		</div>
+	</div>
 </body>
 <script src="http://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
 <script>
@@ -95,5 +103,5 @@
 </script>
 <script src="http://cdnjs.gtimg.com/cdnjs/libs/zepto/1.1.4/zepto.min.js"></script>
 <script src="js/private-util.js"></script>
-<script src="js/register-tailor.js"></script>
+<script src="js/tailor.js"></script>
 </html>
