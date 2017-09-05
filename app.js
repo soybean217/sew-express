@@ -113,7 +113,7 @@ app.use(function(req, res, next) {
 		if (checkWechatHeader()) {
 			if (req.query.code) {
 				isNext = false
-				oAuthBaseProcess(req.query.code)
+				oAuthBaseProcess(req.query.code, 'mp')
 			} else {
 				if (!req.session.wechatBase) {
 					// only support get method
@@ -140,6 +140,31 @@ app.use(function(req, res, next) {
 			res.send('{"status":"error","msg":"no certificate"}')
 			return res.end()
 		}
+	} else if (req.url.indexOf('\/pageWeb\/') != -1 && req.url.indexOf('.js') == -1 && req.url.indexOf('.css') == -1) {
+		if (req.query.code) {
+			isNext = false
+			oAuthBaseProcess(req.query.code, 'open')
+		} else {
+			if (!req.session.wechatBase) {
+				// only support get method
+				// var scope = 'snsapi_userinfo';
+				var urlEncodedUrl = encodeURIComponent(req.protocol + '://' + req.hostname + req.url)
+				var oAuthUrl = 'https://open.weixin.qq.com/connect/qrconnect?appid=' + CONFIG.WECHAT_OPEN.APPID + '&redirect_uri=' + urlEncodedUrl + '&response_type=code&scope=snsapi_login&state=123#wechat_redirect'
+				isNext = false
+				return res.send('<script>location="' + oAuthUrl + '"</script>')
+			} else {
+				if (!req.query.f) {
+					isNext = false
+					return redirectAfterOAuthSuccess()
+				}
+			}
+		}
+	} else if (req.url.indexOf('\/ajaxWeb\/') != -1) {
+		if (!req.session.wechatBase) {
+			isNext = false
+			res.send('{"status":"error","msg":"no certificate"}')
+			return res.end()
+		}
 	}
 	if (isNext) {
 		next();
@@ -153,9 +178,12 @@ app.use(function(req, res, next) {
 		}
 	};
 
-	function oAuthBaseProcess(code) {
+	function oAuthBaseProcess(code, stage) {
 		var https = require('https');
 		var url = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid=' + CONFIG.WECHAT.APPID + '&secret=' + CONFIG.WECHAT.SECRET + '&code=' + code + '&grant_type=authorization_code'
+		if (stage == 'open') {
+			var url = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid=' + CONFIG.WECHAT_OPEN.APPID + '&secret=' + CONFIG.WECHAT_OPEN.SECRET + '&code=' + code + '&grant_type=authorization_code'
+		}
 		https.get(url, function(response) {
 			var body = '';
 			response.on('data', function(d) {
@@ -163,13 +191,13 @@ app.use(function(req, res, next) {
 			});
 			response.on('end', function() {
 				var rev = JSON.parse(body);
+				logger.debug(rev);
 				if (rev.openid) {
 					// async update user info to db
 					insertOrUpdateWechatUser(rev);
-					// logger.debug(rev);
 					// can trace f parameter (from openid) here , and replace it here if you need .
 					req.session.wechatBase = rev
-					if (rev.scope == 'snsapi_userinfo') {
+					if (rev.scope == 'snsapi_userinfo' || rev.scope == 'snsapi_login') {
 						oAuthUserInfo();
 					} else {
 						redirectAfterOAuthSuccess();
@@ -285,8 +313,8 @@ app.use(function(req, res, next) {
 				body += d;
 			});
 			response.on('end', function() {
-				logger.debug(body);
 				var rev = JSON.parse(body);
+				logger.debug("oAuthUserInfo");
 				logger.debug(rev);
 				if (rev.openid) {
 					req.session.wechatUserInfo = rev
