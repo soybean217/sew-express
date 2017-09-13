@@ -498,6 +498,7 @@ function checkOrderCustomerAuthorize(req, res, id, tag, success, fail) {
 	});
 }
 
+
 function checkEditAuthorize(req, res, tag, success, fail) {
 	var sql = ''
 	switch (req.body.table) {
@@ -549,6 +550,91 @@ function editValueAjax(req, res) {
 				} else {
 					if (!(rows.constructor.name == 'OkPacket')) {
 						logger.error('error editBookAjax update sql:')
+						logger.error(rows)
+						return fail()
+					} else {
+						req.session.modifyTag = req.body.modifyTag
+						res.send('{"status":"ok","modifyTag":"' + req.body.modifyTag + '"}')
+						return res.end()
+					}
+				}
+			});
+		} else {
+			logger.warn(' modifyTag lt session')
+			return fail()
+		}
+	}
+
+	function fail() {
+		return res.send('{"status":"error"}')
+	}
+}
+
+function editTailorAjax(req, res) {
+	var tag = "editTailorAjax"
+	var item = ""
+	if (!req.body) return res.sendStatus(400)
+	logger.debug(tag)
+	checkItem()
+	var currentTime = new Date().getTime() / 1000
+
+	function checkItem() {
+		if (',machineModel,mobile,price,wechatId,address,postcode,'.indexOf(',' + req.body.item + ',') != -1) {
+			checkTailor()
+		} else {
+			fail();
+		}
+	}
+
+
+	function checkTailor() {
+		poolConfig.query("select * from tailors WHERE unionId = ? ", [req.session.wechatBase.unionid], function(err, rows, fields) {
+			if (rows.length > 0) {
+				update()
+			} else {
+				insert()
+			}
+		})
+	}
+
+
+	function update() {
+		if (!req.session.modifyTag) {
+			req.session.modifyTag = req.body.modifyTag - 1
+		}
+		if (req.body.modifyTag > req.session.modifyTag) {
+			poolConfig.query('UPDATE tailors  SET ' + req.body.item + '=?,lastModifyTime=? WHERE unionId = ? ', [req.body.value, currentTime, req.session.wechatBase.unionid], function(err, rows, fields) {
+				if (err) {
+					throw err;
+				} else {
+					if (!(rows.constructor.name == 'OkPacket')) {
+						logger.error('error ' + tag + ' update sql:')
+						logger.error(rows)
+						return fail()
+					} else {
+						req.session.modifyTag = req.body.modifyTag
+						res.send('{"status":"ok","modifyTag":"' + req.body.modifyTag + '"}')
+						return res.end()
+					}
+				}
+			});
+		} else {
+			logger.warn(' modifyTag lt session')
+			return fail()
+		}
+	}
+
+	function insert() {
+		if (!req.session.modifyTag) {
+			req.session.modifyTag = req.body.modifyTag - 1
+		}
+		if (req.body.modifyTag > req.session.modifyTag) {
+			poolConfig.query("insert tailors (" + req.body.item + ",openId,createTime,lastModifyTime,unionId) values (?,?,?,?,?)", [req.body.value, req.session.wechatBase.openid, currentTime, currentTime, req.session.wechatBase.unionid], function(err, rows, fields) {
+				if (err) {
+					throw err;
+				} else {
+					if (!(rows.constructor.name == 'OkPacket')) {
+						logger.error('error ' + tag + ' update sql:')
 						logger.error(rows)
 						return fail()
 					} else {
@@ -816,7 +902,7 @@ function picUploadAjax(req, res) {
 						}
 					})
 				} else {
-					poolConfig.query("insert tailors (machinePic,openId,createTime,lastModifyTime) values (?,?,?,?)", [keyNames[0], req.session.wechatBase.openid, currentTime, currentTime], function(err, result, fields) {
+					poolConfig.query("insert tailors (machinePic,openId,createTime,lastModifyTime,unionId) values (?,?,?,?,?)", [keyNames[0], req.session.wechatBase.openid, currentTime, currentTime, req.session.wechatBase.unionid], function(err, result, fields) {
 						if (result.constructor.name == 'OkPacket') {
 							var sendContent = '{"status":"ok","picUrl":"' + CONFIG.QCLOUD_PARA.THUMBNAILS_DOMAIN + keyNames[0] + '"}'
 							logger.debug(sendContent)
@@ -878,6 +964,7 @@ app.get(CONFIG.DIR_FIRST + '/page/entanceTailor', entanceTailor);
 // app.get('/node/sessionTest', sessionTest);
 app.post(CONFIG.DIR_FIRST + '/ajax/picUploadAjax', jsonParser, picUploadAjax);
 app.post(CONFIG.DIR_FIRST + '/ajax/editValueAjax', jsonParser, editValueAjax);
+app.post(CONFIG.DIR_FIRST + '/ajax/editTailorAjax', jsonParser, editTailorAjax);
 app.get(CONFIG.DIR_FIRST + '/ajax/listOrderByCustomerAjax', listOrderByCustomerAjax);
 app.get(CONFIG.DIR_FIRST + '/ajax/tailorAjax', tailorAjax);
 app.get(CONFIG.DIR_FIRST + '/ajax/createUnifiedOrderAjax', createUnifiedOrderAjax);

@@ -24,25 +24,57 @@
 					</article>
 					<a href="javascript:;" class="weui-btn weui-btn_primary" id="chooseImage">拍照或从相册上传绣花机照片</a>
 				</div>
-				<div class="weui-cells__title">绣花机品牌和型号</div>
+				<div class="weui-cells__title">绣花机品牌和型号<span style="color: red">*</span></div>
 				<div class="weui-cells">
 					<div class="weui-cell">
 						<div class="weui-cell__bd">
-							<input class="weui-input" id="inputMobile" maxlength="20" type="text" placeholder="请输入绣花机品牌和型号" value=""/>
+							<input class="weui-input" id="inputMachineModel" maxlength="50" type="text" placeholder="请输入绣花机品牌和型号" value="" oninput="editContent('#inputMachineModel', 'tailor', 'machineModel')"/>
 						</div>
 					</div>
 				</div>
-				<div class="weui-cells__title">手机号码</div>
+				<div class="weui-cells__title">服务价格<span style="color: red">*</span></div>
 				<div class="weui-cells">
 					<div class="weui-cell">
 						<div class="weui-cell__bd">
-							<input class="weui-input" id="inputMobile" maxlength="20" type="text" placeholder="请输入手机号码" value=""/>
+							<input class="weui-input" id="inputPrice" maxlength="20" type="text" placeholder="请输入手机号码" value="" oninput="editContent('#inputPrice', 'tailor', 'price')"/>
+						</div>
+					</div>
+				</div>
+				<div class="weui-cells__title">手机号码<span style="color: red">*</span></div>
+				<div class="weui-cells">
+					<div class="weui-cell">
+						<div class="weui-cell__bd">
+							<input class="weui-input" id="inputMobile" maxlength="20" type="text" placeholder="请输入手机号码" value="" oninput="editContent('#inputMobile', 'tailor', 'mobile')"/>
+						</div>
+					</div>
+				</div>
+				<div class="weui-cells__title">微信号码</div>
+				<div class="weui-cells">
+					<div class="weui-cell">
+						<div class="weui-cell__bd">
+							<input class="weui-input" id="inputWechatId" maxlength="20" type="text" placeholder="请输入手机号码" value="" oninput="editContent('#inputWechatId', 'tailor', 'wechatId')"/>
+						</div>
+					</div>
+				</div>
+				<div class="weui-cells__title">快递地址<span style="color: red">*</span></div>
+				<div class="weui-cells">
+					<div class="weui-cell">
+						<div class="weui-cell__bd">
+							<input class="weui-input" id="inputAddress" maxlength="20" type="text" placeholder="请输入手机号码" value="" oninput="editContent('#inputAddress', 'tailor', 'address')"/>
+						</div>
+					</div>
+				</div>
+				<div class="weui-cells__title">邮编</div>
+				<div class="weui-cells">
+					<div class="weui-cell">
+						<div class="weui-cell__bd">
+							<input class="weui-input" id="inputPostcode" maxlength="20" type="text" placeholder="请输入手机号码" value="" oninput="editContent('#inputPostcode', 'tailor', 'postcode')"/>
 						</div>
 					</div>
 				</div>
 			</div>
 			<div class="weui-tabbar">
-				<div class="weui-cells__tips" id="modifyStatus"></div><a href="javascript:showShareTip();" class="weui-btn weui-btn_primary">分享</a><div class="weui-cells__tips"></div><a href="javascript:confirmClick();" class="weui-btn weui-btn_primary">确定</a>
+				<div class="weui-cells__tips" id="modifyStatus"></div><a href="javascript:showShareTip();" class="weui-btn weui-btn_primary">分享</a><div class="weui-cells__tips"></div><a href="javascript:confirmClick();" class="weui-btn weui-btn_primary">提交</a>
 			</div>
 		</div>
 	</div>

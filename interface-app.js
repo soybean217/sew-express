@@ -55,8 +55,24 @@ poolConfig.getConnection(function(err, conn) {
 
 function respRegisterTailor(req, res) {
 	var ctimeSecond = new Date().getTime() / 1000
-	var resp = '<xml><ToUserName><![CDATA[' + req.body.xml.fromusername + ']]></ToUserName><FromUserName><![CDATA[' + req.body.xml.tousername + ']]></FromUserName><CreateTime>' + ctimeSecond + '</CreateTime><MsgType><![CDATA[text]]></MsgType><Content><![CDATA[你好www.baidu.com]]></Content></xml>'
-	res.send(resp)
+	var resp = ''
+	poolConfig.query("SELECT state FROM tailors where openId=?", [req.body.xml.fromusername], function(err, rowRs, fields) {
+		if (err) {
+			throw err;
+		} else {
+			if (rowRs.length > 0) {
+				if (rowRs[0].state == 'normal') {
+					resp = '<xml><ToUserName><![CDATA[' + req.body.xml.fromusername + ']]></ToUserName><FromUserName><![CDATA[' + req.body.xml.tousername + ']]></FromUserName><CreateTime>' + ctimeSecond + '</CreateTime><MsgType><![CDATA[text]]></MsgType><Content><![CDATA[您已经是正式缝纫机主，请在网站登录正常使用]]></Content></xml>'
+				} else {
+					resp = '<xml><ToUserName><![CDATA[' + req.body.xml.fromusername + ']]></ToUserName><FromUserName><![CDATA[' + req.body.xml.tousername + ']]></FromUserName><CreateTime>' + ctimeSecond + '</CreateTime><MsgType><![CDATA[text]]></MsgType><Content><![CDATA[请修改补充资料继续完成注册' + CONFIG.DOMAIN + CONFIG.DIR_FIRST + '/page/tailor.htm]]></Content></xml>'
+				}
+			} else {
+				resp = '<xml><ToUserName><![CDATA[' + req.body.xml.fromusername + ']]></ToUserName><FromUserName><![CDATA[' + req.body.xml.tousername + ']]></FromUserName><CreateTime>' + ctimeSecond + '</CreateTime><MsgType><![CDATA[text]]></MsgType><Content><![CDATA[请点击链接开始注册' + CONFIG.DOMAIN + CONFIG.DIR_FIRST + '/page/tailor.htm]]></Content></xml>'
+			}
+		}
+		logger.debug('respRegisterTailor', resp)
+		res.send(resp)
+	});
 }
 
 function notify(req, res) {
@@ -68,9 +84,6 @@ function notify(req, res) {
 	} else {
 		res.send('');
 	}
-
-
-	res.end();
 	logger.debug(req.body)
 		// parser.parseString(req.body, function(err, result) {
 		// 	logger.debug(err)

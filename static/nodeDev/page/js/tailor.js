@@ -10,9 +10,7 @@
  * 邮件内容说明：用简明的语言描述问题所在，并交代清楚遇到该问题的场景，可附上截屏图片，微信团队会尽快处理你的反馈。
  */
 wx.ready(function() {
-
 	wxSdkSuccess();
-
 	getInfo();
 	// 5 图片接口
 	// 5.1 拍照、本地选图
@@ -58,7 +56,6 @@ wx.ready(function() {
 											$('#loadingToast').css("display", "none")
 										} else {
 											console.log(result)
-											alert(result)
 											$('#loadingToast').css("display", "none")
 										}
 									},
@@ -102,13 +99,16 @@ function getInfo() {
 				} else {
 					$('#chooseImage').html('拍照或从相册上传绣花机照片')
 				}
+				$('#inputMachineModel').val(tailInfo[0].machineModel)
+				$('#inputMobile').val(tailInfo[0].mobile)
+				$('#inputPrice').val(tailInfo[0].price)
+				$('#inputWechatId').val(tailInfo[0].wechatId)
+				$('#inputAddress').val(tailInfo[0].address)
+				$('#inputPostcode').val(tailInfo[0].postcode)
 			} else {
 				console.log('none')
 				$('#tailorState').html('状态：请填写资料')
 			}
-			var result = ''
-
-			$('#listRead').html(result);
 			$('#loadingToast').css("display", "none")
 				// $('.weui-cells').append(result);
 		},
@@ -119,3 +119,35 @@ function getInfo() {
 		}
 	});
 }
+
+function editContent(viewId, table, item) {
+	modifyTag = new Date().getTime()
+	var editInfo = {
+		value: $(viewId).val(),
+		id: getUrlParam('id'),
+		modifyTag: modifyTag,
+		table: table,
+		item: item,
+	};
+	// document.title = $('#textareaNote').val()
+	console.log(editInfo);
+	$('#modifyStatus').html('保存中...')
+	$.ajax({
+		url: "../ajax/editTailorAjax",
+		type: "post",
+		contentType: "application/json",
+		data: JSON.stringify(editInfo),
+		dateType: "json",
+		success: function(result) {
+			var rev = JSON.parse(result);
+			if (rev.status == 'ok') {
+				if (rev.modifyTag == modifyTag) {
+					$('#modifyStatus').html('已保存')
+						// refreshTitle()
+				}
+			} else {
+				console.log(rev)
+			}
+		},
+	});
+};
