@@ -12,6 +12,7 @@
 wx.ready(function() {
 	wxSdkSuccess();
 	getInfo();
+
 	// 5 图片接口
 	// 5.1 拍照、本地选图
 	var images = {
@@ -105,6 +106,7 @@ function getInfo() {
 				$('#inputWechatId').val(tailInfo[0].wechatId)
 				$('#inputAddress').val(tailInfo[0].address)
 				$('#inputPostcode').val(tailInfo[0].postcode)
+				refreshShareTitle()
 			} else {
 				console.log('none')
 				$('#tailorState').html('状态：请填写资料')
@@ -118,6 +120,34 @@ function getInfo() {
 				// alert('Ajax error!');
 		}
 	});
+}
+
+function refreshShareTitle() {
+	var dict = document.URL.toString().substring(0, document.URL.lastIndexOf('/') + 1)
+
+	function shareData(act) {
+		// title: '微信JS-SDK Demo',
+		// desc: '读书接龙',
+		// link: 'http://demo.open.weixin.qq.com/jssdk/',
+		// imgUrl: 'http://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRt8Qia4lv7k3M9J1SKqKCImxJCt7j9rHYicKDI45jRPBxdzdyREWnk0ia0N5TMnMfth7SdxtzMvVgXg/0'
+		return {
+			title: '开业酬宾', // 分享标题
+			desc: '开业酬宾', // 分享描述
+			link: dict + 'listOrderForCustomer.htm?tailorunionid=' + unionid, // 分享链接，该链接域名或路径必须与当前页面对应的公众号JS安全域名一致
+			// imgUrl: imgUrl, // 分享图标
+			success: function() {
+				logAction(act, 'success');
+				// 用户确认分享后执行的回调函数
+			},
+			cancel: function() {
+				logAction(act, 'cancel');
+				// 用户取消分享后执行的回调函数
+			}
+		}
+	};
+	// wx.onMenuShareAppMessage(shareData);
+	wx.onMenuShareTimeline(shareData('onMenuShareTimeline'));
+	wx.onMenuShareAppMessage(shareData('onMenuShareAppMessage'));
 }
 
 function editContent(viewId, table, item) {
@@ -143,7 +173,7 @@ function editContent(viewId, table, item) {
 			if (rev.status == 'ok') {
 				if (rev.modifyTag == modifyTag) {
 					$('#modifyStatus').html('已保存')
-						// refreshTitle()
+					refreshShareTitle()
 				}
 			} else {
 				console.log(rev)

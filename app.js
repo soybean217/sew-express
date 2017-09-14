@@ -180,9 +180,11 @@ app.use(function(req, res, next) {
 
 	function oAuthBaseProcess(code, stage) {
 		var https = require('https');
+		var appId = CONFIG.WECHAT.APPID;
 		var url = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid=' + CONFIG.WECHAT.APPID + '&secret=' + CONFIG.WECHAT.SECRET + '&code=' + code + '&grant_type=authorization_code'
 		if (stage == 'open') {
 			var url = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid=' + CONFIG.WECHAT_OPEN.APPID + '&secret=' + CONFIG.WECHAT_OPEN.SECRET + '&code=' + code + '&grant_type=authorization_code'
+			appId = CONFIG.WECHAT_OPEN.APPID;
 		}
 		https.get(url, function(response) {
 			var body = '';
@@ -194,7 +196,7 @@ app.use(function(req, res, next) {
 				logger.debug(rev);
 				if (rev.openid) {
 					// async update user info to db
-					insertOrUpdateWechatUser(rev);
+					insertOrUpdateWechatUser(rev, appId);
 					// can trace f parameter (from openid) here , and replace it here if you need .
 					req.session.wechatBase = rev
 					if (rev.scope == 'snsapi_userinfo' || rev.scope == 'snsapi_login') {
@@ -211,8 +213,8 @@ app.use(function(req, res, next) {
 		});
 	};
 
-	function insertOrUpdateWechatUser(wechatBase) {
-		poolConfig.query("SELECT ifnull(lastFetchInfoFromWechat,0) as lastFetchInfoFromWechat,ifnull(subscribeTime,0) as subscribeTime,ifnull(tailorState,0) as tailorState FROM tbl_wechat_users where openId=?", [wechatBase.openid], function(err, rowRs, fields) {
+	function insertOrUpdateWechatUser(wechatBase, appId) {
+		poolConfig.query("SELECT ifnull(lastFetchInfoFromWechat,0) as lastFetchInfoFromWechat,ifnull(subscribeTime,0) as subscribeTime FROM tbl_wechat_users where openId=?", [wechatBase.openid], function(err, rowRs, fields) {
 			if (err) {
 				throw err;
 			} else {
@@ -234,7 +236,7 @@ app.use(function(req, res, next) {
 						getUserInfoWithOpenId(wechatBase.openid)
 					}
 				} else {
-					poolConfig.query("insert into tbl_wechat_users (openId,createTime,lastLoginTime) values (?,?,?)  ", [wechatBase.openid, ctimeSecond, ctimeSecond], function(err, rows, fields) {
+					poolConfig.query("insert into tbl_wechat_users (openId,createTime,lastLoginTime,unionId,appId) values (?,?,?,?,?)  ", [wechatBase.openid, ctimeSecond, ctimeSecond, wechatBase.unionid, appId], function(err, rows, fields) {
 						if (err) {
 							throw err;
 						} else {
@@ -264,7 +266,6 @@ app.use(function(req, res, next) {
 				if (rev.subscribe_time) {
 					req.session.userInfoFromDb = {
 						subscribeTime: rev.subscribe_time,
-						tailorState: 0,
 
 					}
 					req.session.save(null)
@@ -281,7 +282,6 @@ app.use(function(req, res, next) {
 				} else if (rev.subscribe == 0) {
 					req.session.userInfoFromDb = {
 						subscribeTime: 0,
-						tailorState: 0,
 					}
 					req.session.save(null)
 					poolConfig.query("update tbl_wechat_users set lastFetchInfoFromWechat=?,subscribeTime=? where openId=?  ", [ctimeSecond, 0, openId], function(err, rows, fields) {
@@ -579,7 +579,7 @@ function editTailorAjax(req, res) {
 	var currentTime = new Date().getTime() / 1000
 
 	function checkItem() {
-		if (',machineModel,mobile,price,wechatId,address,postcode,'.indexOf(',' + req.body.item + ',') != -1) {
+		if (',machineModel,mobile,price,wechatId,address,postcode,tailorNickName,bank,bankAccount,'.indexOf(',' + req.body.item + ',') != -1) {
 			checkTailor()
 		} else {
 			fail();
@@ -694,6 +694,17 @@ function listOrderByCustomerAjax(req, res) {
 	});
 }
 
+function getTailorInfoByUnionIdAjax(req, res) {
+	poolConfig.query("SELECT * FROM  tailors,tbl_wechat_users WHERE tailors.unionId =?  and tailors.unionId=tbl_wechat_users.unionid and appId=?", [req.query.tailorUnionId, CONFIG.WECHAT.APPID], function(err, rows, fields) {
+		if (err) {
+			throw err;
+		} else {
+			res.send(JSON.stringify(rows))
+			res.end()
+		}
+	});
+}
+
 function tailorAjax(req, res) {
 	poolConfig.query("SELECT * FROM  tailors WHERE openId =?", [req.session.wechatBase.openid], function(err, rows, fields) {
 		if (err) {
@@ -780,7 +791,8 @@ function editBookAjax(req, res) {
 }
 
 function signOut(req, res) {
-	var result = 'var sign = ' + JSON.stringify(sign(globalInfo.jsapiTicket.value, req.header('Referer')));
+	var result = 'var sign = ' + JSON.stringify(sign(globalInfo.jsapiTicket.value, req.header('Referer'))) + ';';
+	result += 'var unionid = ' + JSON.stringify(req.session.wechatBase.unionid) + ';';
 	res.send(result);
 }
 
@@ -920,7 +932,7 @@ function picUploadAjax(req, res) {
 
 	function customerUploadOriginPic() {
 		var createTime = ctime.getTime() / 1000
-		poolConfig.query("insert orders (createTime,lastModifyTime,originPic,customerOpenId) values(?,?,?,?)", [createTime, createTime, keyNames[0], req.session.wechatBase.openid], function(err, rows, fields) {
+		poolConfig.query("insert orders (createTime,lastModifyTime,originPic,customerOpenId,tailorUnionId,orderPrice) values(?,?,?,?,?,?)", [createTime, createTime, keyNames[0], req.session.wechatBase.openid, req.query.tailorUnionId, req.query.price], function(err, rows, fields) {
 			if (err) {
 				throw err;
 			} else {
@@ -966,6 +978,7 @@ app.post(CONFIG.DIR_FIRST + '/ajax/picUploadAjax', jsonParser, picUploadAjax);
 app.post(CONFIG.DIR_FIRST + '/ajax/editValueAjax', jsonParser, editValueAjax);
 app.post(CONFIG.DIR_FIRST + '/ajax/editTailorAjax', jsonParser, editTailorAjax);
 app.get(CONFIG.DIR_FIRST + '/ajax/listOrderByCustomerAjax', listOrderByCustomerAjax);
+app.get(CONFIG.DIR_FIRST + '/ajax/getTailorInfoByUnionIdAjax', getTailorInfoByUnionIdAjax);
 app.get(CONFIG.DIR_FIRST + '/ajax/tailorAjax', tailorAjax);
 app.get(CONFIG.DIR_FIRST + '/ajax/createUnifiedOrderAjax', createUnifiedOrderAjax);
 

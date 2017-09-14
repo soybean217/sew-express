@@ -56,6 +56,14 @@
 						</div>
 					</div>
 				</div>
+				<div class="weui-cells__title">昵称-在邻绣店铺的名字</div>
+				<div class="weui-cells">
+					<div class="weui-cell">
+						<div class="weui-cell__bd">
+							<input class="weui-input" id="inputTailorNickName" maxlength="20" type="text" placeholder="请输入手机号码" value="" oninput="editContent('#inputTailorNickName', 'tailor', 'tailorNickName')"/>
+						</div>
+					</div>
+				</div>
 				<div class="weui-cells__title">快递地址<span style="color: red">*</span></div>
 				<div class="weui-cells">
 					<div class="weui-cell">
@@ -72,6 +80,22 @@
 						</div>
 					</div>
 				</div>
+				<div class="weui-cells__title">收款开户银行名称<span style="color: red">*</span></div>
+				<div class="weui-cells">
+					<div class="weui-cell">
+						<div class="weui-cell__bd">
+							<input class="weui-input" id="inputBank" maxlength="20" type="text" placeholder="请输入手机号码" value="" oninput="editContent('#inputBank', 'tailor', 'bank')"/>
+						</div>
+					</div>
+				</div>
+				<div class="weui-cells__title">银行账户<span style="color: red">*</span></div>
+				<div class="weui-cells">
+					<div class="weui-cell">
+						<div class="weui-cell__bd">
+							<input class="weui-input" id="inputBankAccount" maxlength="20" type="text" placeholder="请输入手机号码" value="" oninput="editContent('#inputBankAccount', 'tailor', 'inputBankAccount')"/>
+						</div>
+					</div>
+				</div>
 			</div>
 			<div class="weui-tabbar">
 				<div class="weui-cells__tips" id="modifyStatus"></div><a href="javascript:showShareTip();" class="weui-btn weui-btn_primary">分享</a><div class="weui-cells__tips"></div><a href="javascript:confirmClick();" class="weui-btn weui-btn_primary">提交</a>
@@ -81,7 +105,7 @@
 	<div class="js_dialog" id="iosDialog2" style="display: none;">
 		<div class="weui-mask"></div>
 		<div class="weui-dialog">
-			<div class="weui-dialog__bd">信息提交审核中</div>
+			<div class="weui-dialog__bd">点击右上角分享即可邀请朋友来您的邻绣小店消费</div>
 			<div class="weui-dialog__ft">
 				<a href="javascript:closeShareTip();" class="weui-dialog__btn weui-dialog__btn_primary">知道了</a>
 			</div>
