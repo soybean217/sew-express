@@ -13,6 +13,7 @@ var fs = require("fs");
 var pu = require('./privateUtil.js');
 
 var log4js = require('log4js');
+
 var logger = log4js.getLogger();
 // log4js.configure({ 
 // 	appenders: [{  
@@ -23,7 +24,7 @@ var logger = log4js.getLogger();
 // 		} 
 // 	}]
 // })
-logger.setLevel(CONFIG.LOG_LEVEL);
+// logger.setLevel(CONFIG.LOG_LEVEL);
 // logger.appender.layout.pattern("[%h %x{pid}] - [%d] [%p] %c %m");
 var bodyParser = require('body-parser');
 var jsonParser = bodyParser.json();
@@ -216,7 +217,7 @@ app.use(function(req, res, next) {
 	function insertOrUpdateWechatUser(wechatBase, appId) {
 		poolConfig.query("SELECT ifnull(lastFetchInfoFromWechat,0) as lastFetchInfoFromWechat,ifnull(subscribeTime,0) as subscribeTime FROM tbl_wechat_users where openId=?", [wechatBase.openid], function(err, rowRs, fields) {
 			if (err) {
-				throw err;
+				logger.error(err)
 			} else {
 				if (rowRs.length > 0) {
 					req.session.userInfoFromDb = rowRs[0];
@@ -224,7 +225,7 @@ app.use(function(req, res, next) {
 					req.session.save(null)
 					poolConfig.query("update tbl_wechat_users set lastLoginTime=? where openId=?  ", [ctimeSecond, wechatBase.openid], function(err, rows, fields) {
 						if (err) {
-							throw err;
+							logger.error(err)
 						} else {
 							if (!rows.constructor.name == 'OkPacket') {
 								logger.error('update tbl_wechat_users set lastLoginTime:')
@@ -238,7 +239,7 @@ app.use(function(req, res, next) {
 				} else {
 					poolConfig.query("insert into tbl_wechat_users (openId,createTime,lastLoginTime,unionId,appId) values (?,?,?,?,?)  ", [wechatBase.openid, ctimeSecond, ctimeSecond, wechatBase.unionid, appId], function(err, rows, fields) {
 						if (err) {
-							throw err;
+							logger.error(err)
 						} else {
 							if (!rows.constructor.name == 'OkPacket') {
 								logger.error('insert into tbl_wechat_users:')
@@ -271,7 +272,7 @@ app.use(function(req, res, next) {
 					req.session.save(null)
 					poolConfig.query("update tbl_wechat_users set lastFetchInfoFromWechat=?,nickName=?,headImgUrl=?,subscribeTime=? where openId=?  ", [ctimeSecond, rev.nickname, rev.headimgurl, rev.subscribe_time, openId], function(err, rows, fields) {
 						if (err) {
-							throw err;
+							logger.error(err)
 						} else {
 							if (!rows.constructor.name == 'OkPacket') {
 								logger.error('update tbl_wechat_users set getUserInfoWithOpenId:')
@@ -286,7 +287,7 @@ app.use(function(req, res, next) {
 					req.session.save(null)
 					poolConfig.query("update tbl_wechat_users set lastFetchInfoFromWechat=?,subscribeTime=? where openId=?  ", [ctimeSecond, 0, openId], function(err, rows, fields) {
 						if (err) {
-							throw err;
+							logger.error(err)
 						} else {
 							if (!rows.constructor.name == 'OkPacket') {
 								logger.error('update tbl_wechat_users set getUserInfoWithOpenId:')
@@ -351,7 +352,7 @@ function index(req, res) {
 function profile(req, res) {
 	poolConfig.query("SELECT *,ifnull(memberExpireTime,0) as memberExpireTime,ifnull(currentCapacity,0) as currentCapacity FROM tbl_wechat_users where openId=?", [req.session.wechatBase.openid], function(err, rows, fields) {
 		if (err) {
-			throw err;
+			logger.error(err)
 		} else {
 			if (rows.length > 0) {
 				var ctime = new Date()
@@ -388,7 +389,7 @@ function read(req, res) {
 		var renderDict = {}
 		poolConfig.query("SELECT *,IFNULL(bookName,'') AS bookName,IFNULL(note,'') AS note,cover,IFNULL(author,'') AS author,IFNULL(translator,'') AS translator ,tbl_notes.id as noteId,tbl_reads.openId,bookId,ifnull(tbl_wechat_users.nickName,'') as nickName FROM  `tbl_notes`,`tbl_reads`, `tbl_books`,tbl_wechat_users  WHERE tbl_books.id = tbl_reads.bookId AND tbl_notes.readId=tbl_reads.id AND tbl_wechat_users.openId=tbl_reads.openid AND tbl_reads.id = ? order by tbl_notes.id desc ", [req.query.id], function(err, rows, fields) {
 			if (err) {
-				throw err;
+				logger.error(err)
 			} else {
 				var button = ''
 				if (req.session.userInfoFromDb && req.session.userInfoFromDb.subscribeTime == 0) {
@@ -468,6 +469,12 @@ function editOrderByCustomer(req, res) {
 		var renderDict = {
 			"{{originPic}}": CONFIG.QCLOUD_PARA.THUMBNAILS_DOMAIN + rows[0].originPic,
 			"{{textContent}}": rows[0].textContent && rows[0].textContent != 'null' ? rows[0].textContent : '',
+			"{{tailorNickName}}": rows[0].tailorNickName && rows[0].tailorNickName != 'null' ? rows[0].tailorNickName : '',
+			"{{tailorReceiver}}": rows[0].tailorReceiver && rows[0].tailorReceiver != 'null' ? rows[0].tailorReceiver : '',
+			"{{tailorMobile}}": rows[0].tailorMobile && rows[0].tailorMobile != 'null' ? rows[0].tailorMobile : '',
+			"{{tailorAddress}}": rows[0].tailorAddress && rows[0].tailorAddress != 'null' ? rows[0].tailorAddress : '',
+			"{{tailorPostcode}}": rows[0].tailorPostcode && rows[0].tailorPostcode != 'null' ? rows[0].tailorPostcode : '',
+			"{{orderPrice}}": rows[0].orderPrice && rows[0].orderPrice != 'null' ? rows[0].orderPrice : 0,
 		};
 		return res.send(pu.renderHtml(globalInfo.cacheTemplate[pageFile].content, renderDict))
 	}
@@ -480,9 +487,9 @@ function editOrderByCustomer(req, res) {
 
 
 function checkOrderCustomerAuthorize(req, res, id, tag, success, fail) {
-	poolConfig.query("SELECT * FROM `orders`  WHERE id = ?", [id], function(err, rows, fields) {
+	poolConfig.query("SELECT * FROM `orders`,tailors  WHERE orders.id = ? and orders.tailorUnionId=tailors.unionId  ", [id], function(err, rows, fields) {
 		if (err) {
-			throw err;
+			logger.error(err)
 		} else {
 			if (rows.length > 0) {
 				if (rows[0].customerOpenId == req.session.wechatBase.openid) {
@@ -511,7 +518,7 @@ function checkEditAuthorize(req, res, tag, success, fail) {
 	if (sql != '') {
 		poolConfig.query(sql, [req.body.id], function(err, rows, fields) {
 			if (err) {
-				throw err;
+				logger.error(err)
 			} else {
 				if (rows.length > 0) {
 					if (rows[0].customerOpenId == req.session.wechatBase.openid) {
@@ -546,7 +553,7 @@ function editValueAjax(req, res) {
 		if (req.body.modifyTag > req.session.modifyTag) {
 			poolConfig.query("UPDATE orders SET textContent=?,lastModifyTime=? WHERE id = ? ", [req.body.value, new Date().getTime() / 1000, req.body.id], function(err, rows, fields) {
 				if (err) {
-					throw err;
+					logger.error(err)
 				} else {
 					if (!(rows.constructor.name == 'OkPacket')) {
 						logger.error('error editBookAjax update sql:')
@@ -605,7 +612,8 @@ function editTailorAjax(req, res) {
 		if (req.body.modifyTag > req.session.modifyTag) {
 			poolConfig.query('UPDATE tailors  SET ' + req.body.item + '=?,lastModifyTime=? WHERE unionId = ? ', [req.body.value, currentTime, req.session.wechatBase.unionid], function(err, rows, fields) {
 				if (err) {
-					throw err;
+					logger.error(err)
+					return fail()
 				} else {
 					if (!(rows.constructor.name == 'OkPacket')) {
 						logger.error('error ' + tag + ' update sql:')
@@ -631,7 +639,7 @@ function editTailorAjax(req, res) {
 		if (req.body.modifyTag > req.session.modifyTag) {
 			poolConfig.query("insert tailors (" + req.body.item + ",openId,createTime,lastModifyTime,unionId) values (?,?,?,?,?)", [req.body.value, req.session.wechatBase.openid, currentTime, currentTime, req.session.wechatBase.unionid], function(err, rows, fields) {
 				if (err) {
-					throw err;
+					logger.error(err)
 				} else {
 					if (!(rows.constructor.name == 'OkPacket')) {
 						logger.error('error ' + tag + ' update sql:')
@@ -662,7 +670,7 @@ function actLogAjax(req, res) {
 		1, req.session.wechatBase.openid, req.body.act, req.body.result, req.body.location
 	], function(err, rows, fields) {
 		if (err) {
-			throw err;
+			logger.error(err)
 		} else {
 			if (!(rows.constructor.name == 'OkPacket')) {
 				logger.error('error actLogAjax sql:')
@@ -675,7 +683,7 @@ function actLogAjax(req, res) {
 function listOrderByCustomerAjax(req, res) {
 	poolConfig.query("SELECT * FROM  orders WHERE customerOpenId =? order by lastModifyTime desc", [req.session.wechatBase.openid], function(err, rows, fields) {
 		if (err) {
-			throw err;
+			logger.error(err)
 		} else {
 			var result = {
 				rows: [],
@@ -697,7 +705,7 @@ function listOrderByCustomerAjax(req, res) {
 function getTailorInfoByUnionIdAjax(req, res) {
 	poolConfig.query("SELECT * FROM  tailors,tbl_wechat_users WHERE tailors.unionId =?  and tailors.unionId=tbl_wechat_users.unionid and appId=?", [req.query.tailorUnionId, CONFIG.WECHAT.APPID], function(err, rows, fields) {
 		if (err) {
-			throw err;
+			logger.error(err)
 		} else {
 			res.send(JSON.stringify(rows))
 			res.end()
@@ -708,7 +716,7 @@ function getTailorInfoByUnionIdAjax(req, res) {
 function tailorAjax(req, res) {
 	poolConfig.query("SELECT * FROM  tailors WHERE openId =?", [req.session.wechatBase.openid], function(err, rows, fields) {
 		if (err) {
-			throw err;
+			logger.error(err)
 		} else {
 			if (rows.length > 0 && rows[0].machinePic) {
 				rows[0].machinePic = CONFIG.QCLOUD_PARA.THUMBNAILS_DOMAIN + rows[0].machinePic
@@ -732,7 +740,7 @@ function createUnifiedOrderAjax(req, res) {
 	var ctime = new Date()
 
 	wxpay.createUnifiedOrder({
-		body: '会员费',
+		body: '服务费',
 		out_trade_no: '' + ctime.getFullYear() + '-' + (ctime.getMonth() + 1) + '-' + ctime.getDate() + '-' + ctime.getHours() + '-' + ctime.getMinutes() + '-' + ctime.getSeconds() + '-' + Math.random().toString().substr(2, 10),
 		total_fee: CONFIG.MEMBER_FEE,
 		spbill_create_ip: '127.0.0.1',
@@ -741,6 +749,8 @@ function createUnifiedOrderAjax(req, res) {
 		product_id: '1',
 		openid: req.session.wechatBase.openid,
 	}, function(err, result) {
+		logger.debug(err)
+		logger.debug(result)
 		var reqparam = {
 			appId: CONFIG.WECHAT.APPID,
 			timeStamp: parseInt(new Date().getTime() / 1000) + "",
@@ -769,7 +779,7 @@ function editBookAjax(req, res) {
 		if (rows[0].bookName != req.body.bookName || rows[0].author != req.body.author || rows[0].translator != req.body.translator) {
 			poolConfig.query("update tbl_books set bookName=?,author=?,translator=?,lastModifyOpenId=?,lastModifyTime=? where id=?", [req.body.bookName, req.body.author, req.body.translator, req.session.wechatBase.openid, new Date().getTime() / 1000, req.body.id], function(err, rows, fields) {
 				if (err) {
-					throw err;
+					logger.error(err)
 				} else {
 					if (!(rows.constructor.name == 'OkPacket')) {
 						logger.error('error editBookAjax update sql:')
@@ -854,7 +864,6 @@ function picUploadAjax(req, res) {
 							fs.unlink(tmpFileName, (err) => {
 								if (err) {
 									logger.error(err);
-									throw err;
 								}
 								successUploadCount++
 								successUploadBytes += body.length
@@ -887,7 +896,7 @@ function picUploadAjax(req, res) {
 		var currentTime = ctime.getTime() / 1000
 		poolConfig.query("select machinePic from tailors where openid=?", [req.session.wechatBase.openid], function(err, rows, fields) {
 			if (err) {
-				throw err;
+				logger.error(err)
 			} else {
 				if (rows.length > 0) {
 					poolConfig.query("update tailors set machinePic=?,lastModifyTime=? where openid=?", [keyNames[0], currentTime, req.session.wechatBase.openid], function(err, result, fields) {
@@ -932,9 +941,9 @@ function picUploadAjax(req, res) {
 
 	function customerUploadOriginPic() {
 		var createTime = ctime.getTime() / 1000
-		poolConfig.query("insert orders (createTime,lastModifyTime,originPic,customerOpenId,tailorUnionId,orderPrice) values(?,?,?,?,?,?)", [createTime, createTime, keyNames[0], req.session.wechatBase.openid, req.query.tailorUnionId, req.query.price], function(err, rows, fields) {
+		poolConfig.query("insert orders (createTime,lastModifyTime,originPic,customerOpenId,tailorUnionId,orderPrice,tailorMobile,tailorAddress,tailorPostcode,tailorReceiver) select ?,?,?,?,unionid,price,mobile,address,postcode,realName from tailors where unionid=? ", [createTime, createTime, keyNames[0], req.session.wechatBase.openid, req.query.tailorUnionId], function(err, rows, fields) {
 			if (err) {
-				throw err;
+				logger.error(err)
 			} else {
 				if (rows.constructor.name == 'OkPacket') {
 					var sendContent = '{"status":"ok","location":"editOrderByCustomer?id=' + rows.insertId + '"}'
@@ -952,7 +961,7 @@ function picUploadAjax(req, res) {
 	function addCapacityUsed() {
 		poolConfig.query("update tbl_wechat_users set currentCapacity=ifnull(currentCapacity,0)+? where openId=?", [successUploadBytes, req.session.wechatBase.openid], function(err, rows, fields) {
 			if (err) {
-				throw err;
+				logger.error(rows)
 			} else {
 				if (rows.constructor.name != 'OkPacket') {
 					logger.error('error update tbl_wechat_users set currentCapacity:')

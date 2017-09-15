@@ -106,6 +106,9 @@ function getInfo() {
 				$('#inputWechatId').val(tailInfo[0].wechatId)
 				$('#inputAddress').val(tailInfo[0].address)
 				$('#inputPostcode').val(tailInfo[0].postcode)
+				$('#inputTailorNickName').val(tailInfo[0].tailorNickName)
+				$('#inputBank').val(tailInfo[0].bank)
+				$('#inputBankAccount').val(tailInfo[0].bankAccount)
 				refreshShareTitle()
 			} else {
 				console.log('none')
@@ -173,7 +176,7 @@ function editContent(viewId, table, item) {
 			if (rev.status == 'ok') {
 				if (rev.modifyTag == modifyTag) {
 					$('#modifyStatus').html('已保存')
-					refreshShareTitle()
+						// refreshShareTitle()
 				}
 			} else {
 				console.log(rev)

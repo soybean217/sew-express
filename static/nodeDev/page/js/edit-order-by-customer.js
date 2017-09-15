@@ -21,7 +21,38 @@ wx.ready(function() {
     success: function(res) {}
   });
 
-  document.title = $('#textareaNote').val()
+  document.querySelector('#chooseWXPay').onclick = function() {
+    $.ajax({
+      type: 'GET',
+      url: "../ajax/createUnifiedOrderAjax",
+      dataType: 'json',
+      success: function(data) {
+        // alert(JSON.stringify(data))
+        console.log(data)
+
+        // var rev = JSON.parse(result);
+
+        // wx.chooseWXPay({
+        //   timestamp: data.timeStamp,
+        //   nonceStr: 'noncestr',
+        //   package: '',
+        //   signType: 'MDS', // 注意：新版支付接口使用 MD5 加密
+        //   paySign: 'bd5b1933cda6e9548862944836a9b52e8c9a2b69'
+        // });
+        data.success = function(res) {
+          // alert(JSON.stringify(res));
+          //{"errMsg":"chooseWXPay:ok"}
+          if (res.errMsg == "chooseWXPay:ok") {
+            location.reload(true)
+          }
+        }
+        wx.chooseWXPay(data)
+      },
+      error: function(xhr, type) {
+        alert('Ajax error!');
+      }
+    });
+  };
 
   // document.querySelector('#inputTextContent').oninput = editContent('#inputTextContent', 'orderByCustomer', 'textContent')
   // document.querySelector('#inputTextContent').oninput = test
@@ -55,7 +86,7 @@ function editContent(viewId, table, item) {
       if (rev.status == 'ok') {
         if (rev.modifyTag == modifyTag) {
           $('#modifyStatus').html('已保存')
-          refreshTitle()
+            // refreshTitle()
         }
       } else {
         console.log(rev)
@@ -63,6 +94,45 @@ function editContent(viewId, table, item) {
     },
   });
 };
+
+function getOrderInfo() {
+  $.ajax({
+    type: 'GET',
+    url: "../ajax/getOrderInfoAjax?orderId=" + getUrlParam('id'),
+    dataType: 'json',
+    success: function(data) {
+      tailInfo = data
+      console.log(data)
+      if (data.length > 0) {
+        console.log('something')
+        $('#tailorState').html('状态：资料完善中')
+        if (tailInfo[0].machinePic) {
+          $('#chooseImage').html('更新绣花机照片')
+          $('#previewImage').html('<img src="' + tailInfo[0].machinePic + '">')
+        } else {
+          $('#chooseImage').html('拍照或从相册上传绣花机照片')
+        }
+        $('#inputMachineModel').val(tailInfo[0].machineModel)
+        $('#inputMobile').val(tailInfo[0].mobile)
+        $('#inputPrice').val(tailInfo[0].price)
+        $('#inputWechatId').val(tailInfo[0].wechatId)
+        $('#inputAddress').val(tailInfo[0].address)
+        $('#inputPostcode').val(tailInfo[0].postcode)
+        refreshShareTitle()
+      } else {
+        console.log('none')
+        $('#tailorState').html('状态：请填写资料')
+      }
+      $('#loadingToast').css("display", "none")
+        // $('.weui-cells').append(result);
+    },
+    error: function(xhr, type) {
+      console.log(xhr)
+      console.log(type)
+        // alert('Ajax error!');
+    }
+  });
+}
 
 function refreshTitle() {
   function shareData(act) {
