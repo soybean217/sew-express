@@ -738,17 +738,19 @@ function createUnifiedOrderAjax(req, res) {
 	});
 
 	var ctime = new Date()
-
-	wxpay.createUnifiedOrder({
+	var para = {
 		body: '服务费',
-		out_trade_no: '' + ctime.getFullYear() + '-' + (ctime.getMonth() + 1) + '-' + ctime.getDate() + '-' + ctime.getHours() + '-' + ctime.getMinutes() + '-' + ctime.getSeconds() + '-' + Math.random().toString().substr(2, 10),
+		out_trade_no: '' + ctime.getFullYear() + '-' + (ctime.getMonth() + 1) + '-' + ctime.getDate() + '-' + ctime.getHours() + '-' + ctime.getMinutes() + '-' + ctime.getSeconds() + '-' + Math.random().toString().substr(2, 10) + '-' + req.query.orderId,
 		total_fee: CONFIG.MEMBER_FEE,
 		spbill_create_ip: '127.0.0.1',
 		notify_url: 'http://' + CONFIG.DOMAIN + '/' + CONFIG.PAY_DIR_FIRST + '/notify',
 		trade_type: 'JSAPI',
-		product_id: '1',
+		product_id: req.query.orderId,
 		openid: req.session.wechatBase.openid,
-	}, function(err, result) {
+	}
+	wxpay.createUnifiedOrder(para, function(err, result) {
+		logger.debug('createUnifiedOrder:')
+		logger.debug(para)
 		logger.debug(err)
 		logger.debug(result)
 		var reqparam = {

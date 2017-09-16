@@ -24,7 +24,7 @@ wx.ready(function() {
   document.querySelector('#chooseWXPay').onclick = function() {
     $.ajax({
       type: 'GET',
-      url: "../ajax/createUnifiedOrderAjax",
+      url: "../ajax/createUnifiedOrderAjax?orderId=" + getUrlParam('id'),
       dataType: 'json',
       success: function(data) {
         // alert(JSON.stringify(data))
