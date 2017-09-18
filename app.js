@@ -684,6 +684,8 @@ function listOrderByCustomerAjax(req, res) {
 	poolConfig.query("SELECT * FROM  orders WHERE customerOpenId =? order by lastModifyTime desc", [req.session.wechatBase.openid], function(err, rows, fields) {
 		if (err) {
 			logger.error(err)
+			res.send('{"status":"error"}')
+			res.end()
 		} else {
 			var result = {
 				rows: [],
@@ -696,6 +698,23 @@ function listOrderByCustomerAjax(req, res) {
 				}
 				result.rows.push(cell)
 			});
+			res.send(JSON.stringify(result))
+			res.end()
+		}
+	});
+}
+
+function listOrderByTailorAjax(req, res) {
+	poolConfig.query("SELECT * FROM  orders WHERE tailorUnionId =? order by lastModifyTime desc", [req.session.wechatBase.unionid], function(err, rows, fields) {
+		if (err) {
+			logger.error(err)
+			res.send('{"status":"error"}')
+			res.end()
+		} else {
+			var result = {
+				rows: rows,
+				THUMBNAILS_DOMAIN: CONFIG.QCLOUD_PARA.THUMBNAILS_DOMAIN,
+			}
 			res.send(JSON.stringify(result))
 			res.end()
 		}
@@ -989,6 +1008,7 @@ app.post(CONFIG.DIR_FIRST + '/ajax/picUploadAjax', jsonParser, picUploadAjax);
 app.post(CONFIG.DIR_FIRST + '/ajax/editValueAjax', jsonParser, editValueAjax);
 app.post(CONFIG.DIR_FIRST + '/ajax/editTailorAjax', jsonParser, editTailorAjax);
 app.get(CONFIG.DIR_FIRST + '/ajax/listOrderByCustomerAjax', listOrderByCustomerAjax);
+app.get(CONFIG.DIR_FIRST + '/ajax/listOrderByTailorAjax', listOrderByTailorAjax);
 app.get(CONFIG.DIR_FIRST + '/ajax/getTailorInfoByUnionIdAjax', getTailorInfoByUnionIdAjax);
 app.get(CONFIG.DIR_FIRST + '/ajax/tailorAjax', tailorAjax);
 app.get(CONFIG.DIR_FIRST + '/ajax/createUnifiedOrderAjax', createUnifiedOrderAjax);

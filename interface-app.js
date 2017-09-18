@@ -1,15 +1,8 @@
 'use strict';
 var express = require('express');
-var session = require('express-session');
-var RedisStore = require('connect-redis')(session);
-var path = require('path');
-var sign = require('./sign.js');
 var CONFIG = require('./config.js');
 var app = express();
 var mysql = require('mysql');
-var url = require('url');
-var fs = require("fs");
-var pu = require('./privateUtil.js');
 var xml2js = require('xml2js');
 var xmlparser = require('express-xml-bodyparser');
 var log4js = require('log4js');
