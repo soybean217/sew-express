@@ -40,6 +40,14 @@
 						</div>
 					</div>
 				</div>
+				<div class="weui-cells__title"><a href="javascript:" class="weui-btn weui-btn_primary" id='aAddress'>填写快递信息</a></div>
+				<div class="weui-cells">
+					<div class="weui-cell">
+						<div class="weui-cell__bd" id='addressContent'>
+							点击上面按钮填写
+						</div>
+					</div>
+				</div>
 				<div class="weui-cells__title">手机号码<span style="color: red">*</span></div>
 				<div class="weui-cells">
 					<div class="weui-cell">
@@ -64,22 +72,6 @@
 						</div>
 					</div>
 				</div>
-				<div class="weui-cells__title">快递地址<span style="color: red">*</span></div>
-				<div class="weui-cells">
-					<div class="weui-cell">
-						<div class="weui-cell__bd">
-							<input class="weui-input" id="inputAddress" maxlength="20" type="text" placeholder="请输入快递地址" value="" oninput="editContent('#inputAddress', 'tailor', 'address')"/>
-						</div>
-					</div>
-				</div>
-				<div class="weui-cells__title">邮编</div>
-				<div class="weui-cells">
-					<div class="weui-cell">
-						<div class="weui-cell__bd">
-							<input class="weui-input" id="inputPostcode" maxlength="20" type="text" placeholder="请输入邮编" value="" oninput="editContent('#inputPostcode', 'tailor', 'postcode')"/>
-						</div>
-					</div>
-				</div>
 				<div class="weui-cells__title">收款开户银行名称<span style="color: red">*</span></div>
 				<div class="weui-cells">
 					<div class="weui-cell">
@@ -98,7 +90,10 @@
 				</div>
 			</div>
 			<div class="weui-tabbar">
-				<div class="weui-cells__tips" id="modifyStatus"></div><a href="javascript:showShareTip();" class="weui-btn weui-btn_primary">分享</a><div class="weui-cells__tips"></div><a href="javascript:confirmClick();" class="weui-btn weui-btn_primary">提交</a>
+				<div class="weui-cells__tips" id="modifyStatus"></div>
+				<a href="javascript:showShareTip();" class="weui-btn weui-btn_primary">分享</a>
+				<div class="weui-cells__tips"></div>
+				<a href="javascript:confirmClick();" class="weui-btn weui-btn_primary">提交</a>
 			</div>
 		</div>
 	</div>
@@ -154,7 +149,7 @@
 				'getNetworkType', 'openLocation', 'getLocation',
 				'hideOptionMenu', 'showOptionMenu', 'closeWindow',
 				'scanQRCode', 'chooseWXPay', 'openProductSpecificView',
-				'addCard', 'chooseCard', 'openCard' ]
+				'addCard', 'chooseCard', 'openCard','openAddress' ]
 	});
 </script>
 <script src="http://cdnjs.gtimg.com/cdnjs/libs/zepto/1.1.4/zepto.min.js"></script>

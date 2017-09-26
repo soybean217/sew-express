@@ -586,7 +586,7 @@ function editTailorAjax(req, res) {
 	var currentTime = new Date().getTime() / 1000
 
 	function checkItem() {
-		if (',machineModel,mobile,price,wechatId,address,postcode,tailorNickName,bank,bankAccount,'.indexOf(',' + req.body.item + ',') != -1) {
+		if (',machineModel,mobile,price,wechatId,address,postcode,tailorNickName,bank,bankAccount,expressInfo,'.indexOf(',' + req.body.item + ',') != -1) {
 			checkTailor()
 		} else {
 			fail();

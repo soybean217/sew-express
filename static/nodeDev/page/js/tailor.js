@@ -19,6 +19,23 @@ wx.ready(function() {
 		localId: [],
 		serverId: []
 	};
+	document.querySelector('#aAddress').onclick = function() {
+		wx.openAddress({
+			success: function(res) {
+				// 用户成功拉出地址 
+				alert(JSON.stringify(res));
+				// $('#addressContent').html('收货人姓名:' + res.userName)
+				if (res.errMsg == 'openAddress:ok') {
+					showAddress(res);
+					editContentWithVal(JSON.stringify(res), 'tailor', 'expressInfo')
+				}
+			},
+			cancel: function() {
+				// 用户取消拉出地址
+				console.log('cancel')
+			}
+		});
+	}
 	document.querySelector('#chooseImage').onclick = function() {
 		wx.chooseImage({
 			count: 1, // 默认9
@@ -83,6 +100,10 @@ wx.ready(function() {
 
 var tailInfo;
 
+function showAddress(res) {
+	$('#addressContent').html('收货人姓名:' + res.userName + '<br>' + '邮编:' + res.postalCode + '<br>' + res.provinceName + ' ' + res.cityName + ' ' + res.countryName + ' ' + res.detailInfo + '<br>电话:' + res.telNumber + '')
+}
+
 function getInfo() {
 	$.ajax({
 		type: 'GET',
@@ -109,6 +130,11 @@ function getInfo() {
 				$('#inputTailorNickName').val(tailInfo[0].tailorNickName)
 				$('#inputBank').val(tailInfo[0].bank)
 				$('#inputBankAccount').val(tailInfo[0].bankAccount)
+				if (tailInfo[0].expressInfo) {
+					$('#aAddress').html('修改快递信息')
+					var res = JSON.parse(tailInfo[0].expressInfo);
+					showAddress(res);
+				}
 				refreshShareTitle()
 			} else {
 				console.log('none')
@@ -153,10 +179,10 @@ function refreshShareTitle() {
 	wx.onMenuShareAppMessage(shareData('onMenuShareAppMessage'));
 }
 
-function editContent(viewId, table, item) {
+function editContentWithVal(val, table, item) {
 	modifyTag = new Date().getTime()
 	var editInfo = {
-		value: $(viewId).val(),
+		value: val,
 		id: getUrlParam('id'),
 		modifyTag: modifyTag,
 		table: table,
@@ -176,11 +202,15 @@ function editContent(viewId, table, item) {
 			if (rev.status == 'ok') {
 				if (rev.modifyTag == modifyTag) {
 					$('#modifyStatus').html('已保存')
-						// refreshShareTitle()
+					refreshShareTitle()
 				}
 			} else {
 				console.log(rev)
 			}
 		},
 	});
+}
+
+function editContent(viewId, table, item) {
+	editContentWithVal($(viewId).val(), table, item);
 };
