@@ -94,8 +94,6 @@ function getListRead() {
 			})
 			$('#listRead').html(result);
 			getTailorInfoByUnionId(getUrlParam('tailorunionid'))
-				// $('.weui-cells').append(result);
-
 		},
 		error: function(xhr, type) {
 			console.log(xhr)

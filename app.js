@@ -962,7 +962,7 @@ function picUploadAjax(req, res) {
 
 	function customerUploadOriginPic() {
 		var createTime = ctime.getTime() / 1000
-		poolConfig.query("insert orders (createTime,lastModifyTime,originPic,customerOpenId,tailorUnionId,orderPrice,tailorMobile,tailorAddress,tailorPostcode,tailorReceiver) select ?,?,?,?,unionid,price,mobile,address,postcode,realName from tailors where unionid=? ", [createTime, createTime, keyNames[0], req.session.wechatBase.openid, req.query.tailorUnionId], function(err, rows, fields) {
+		poolConfig.query("insert orders (createTime,lastModifyTime,originPic,customerOpenId,tailorUnionId,orderPrice,tailorMobile,tailorAddress,tailorPostcode,tailorReceiver,tailorExpressInfo) select ?,?,?,?,unionid,price,mobile,address,postcode,realName,expressInfo from tailors where unionid=? ", [createTime, createTime, keyNames[0], req.session.wechatBase.openid, req.query.tailorUnionId], function(err, rows, fields) {
 			if (err) {
 				logger.error(err)
 			} else {

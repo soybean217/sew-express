@@ -31,7 +31,38 @@
 						</div>
 					</div>
 				</div>
-				<div class="weui-cells__title">价格:{{orderPrice}}<br>订单将由{{tailorNickName}}为您处理：<br>请支付后将需要绣制衣物快递(请勿使用到付)或送达以下地址：<br>{{tailorReceiver}},{{tailorMobile}},{{tailorAddress}},邮编:{{tailorPostcode}}
+				<div class="weui-cells__title">价格:{{orderPrice}}<br>订单将由{{tailorNickName}}为您处理。</div>
+				<div class="weui-cells weui-cells_radio">
+					<label class="weui-cell weui-check__label" for="x11">
+						<div class="weui-cell__bd">
+							<p>和店主当面交付衣物</p>
+						</div>
+						<div class="weui-cell__ft">
+							<input type="radio" class="weui-check" name="expressRadio" id="x11" onchange="javascript:chooseExpressMethod()"/>
+							<span class="weui-icon-checked"></span>
+						</div>
+					</label>
+					<label class="weui-cell weui-check__label" for="x12">
+						<div class="weui-cell__bd">
+							<p>快递交付衣物</p>
+						</div>
+						<div class="weui-cell__ft">
+							<input type="radio" name="expressRadio" class="weui-check" id="x12" checked="checked" onchange="javascript:chooseExpressMethod()" />
+							<span class="weui-icon-checked"></span>
+						</div>
+					</label>
+				</div>
+				<div id="tailorExpressInfo">
+					<div class="weui-cells__title"><br>请支付后将需要绣制衣物快递(请勿使用到付)到以下地址：<br>{{tailorReceiver}},{{tailorMobile}},{{tailorAddress}},邮编:{{tailorPostcode}}
+					</div>
+					<div class="weui-cells__title"><a href="javascript:" class="weui-btn weui-btn_primary" id='aAddress'>填写快递信息</a></div>
+					<div class="weui-cells">
+						<div class="weui-cell">
+							<div class="weui-cell__bd" id='addressContent'>
+								点击上面按钮填写
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 			<div class="weui-tabbar">
@@ -74,7 +105,7 @@
 				'getNetworkType', 'openLocation', 'getLocation',
 				'hideOptionMenu', 'showOptionMenu', 'closeWindow',
 				'scanQRCode', 'chooseWXPay', 'openProductSpecificView',
-				'addCard', 'chooseCard', 'openCard' ]
+				'addCard', 'chooseCard', 'openCard','openAddress' ]
 	});
 </script>
 <script src="http://cdnjs.gtimg.com/cdnjs/libs/zepto/1.1.4/zepto.min.js"></script>

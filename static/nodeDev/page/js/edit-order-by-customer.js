@@ -43,7 +43,7 @@ wx.ready(function() {
           // alert(JSON.stringify(res));
           //{"errMsg":"chooseWXPay:ok"}
           if (res.errMsg == "chooseWXPay:ok") {
-            location.reload(true)
+            // location.reload(true)
           }
         }
         wx.chooseWXPay(data)
@@ -62,6 +62,15 @@ wx.ready(function() {
   refreshTitle()
 
 });
+
+function chooseExpressMethod() {
+  console.log('onchange' + $('#x11').checked)
+  if ($('#x11').checked = true) {
+    $('#tailorExpressInfo').css("display", "inline")
+  } else {
+    $('#tailorExpressInfo').css("display", "none")
+  }
+}
 
 function editContent(viewId, table, item) {
   modifyTag = new Date().getTime()
