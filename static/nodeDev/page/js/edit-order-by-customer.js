@@ -21,6 +21,8 @@ wx.ready(function() {
     success: function(res) {}
   });
 
+  getOrderInfo()
+
   document.querySelector('#chooseWXPay').onclick = function() {
     $.ajax({
       type: 'GET',
@@ -54,9 +56,6 @@ wx.ready(function() {
     });
   };
 
-  // document.querySelector('#inputTextContent').oninput = editContent('#inputTextContent', 'orderByCustomer', 'textContent')
-  // document.querySelector('#inputTextContent').oninput = test
-
   registerPreviewImage()
 
   refreshTitle()
@@ -72,10 +71,10 @@ function chooseExpressMethod() {
   }
 }
 
-function editContent(viewId, table, item) {
+function editContent(val, table, item) {
   modifyTag = new Date().getTime()
   var editInfo = {
-    value: $(viewId).val(),
+    value: val,
     id: getUrlParam('id'),
     modifyTag: modifyTag,
     table: table,
@@ -104,30 +103,56 @@ function editContent(viewId, table, item) {
   });
 };
 
+
+var orderInfo = null;
+var tailorExpressInfo = new Vue({
+  el: '#tailorExpressInfo',
+  data: {
+    seen: true,
+  },
+})
+
+var radioChooseExpressMethod = new Vue({
+  el: '#radio-choose-express-method',
+  data: {
+    pickMethod: '',
+    canUpdate: false,
+  },
+  watch: {
+    pickMethod: function(val, oldVal) {
+      console.log(orderInfo)
+      if (val == 'byHand') {
+        tailorExpressInfo.seen = false
+      } else {
+        tailorExpressInfo.seen = true
+      }
+      if (orderInfo && orderInfo[0].expressMethod != val) {
+        this.canUpdate = true;
+      }
+      if (this.canUpdate) {
+        editContent(val, 'orderByCustomer', 'expressMethod')
+      }
+    }
+  }
+})
+
+
+
 function getOrderInfo() {
   $.ajax({
     type: 'GET',
     url: "../ajax/getOrderInfoAjax?orderId=" + getUrlParam('id'),
     dataType: 'json',
     success: function(data) {
-      tailInfo = data
+      orderInfo = data
       console.log(data)
       if (data.length > 0) {
         console.log('something')
-        $('#tailorState').html('状态：资料完善中')
-        if (tailInfo[0].machinePic) {
-          $('#chooseImage').html('更新绣花机照片')
-          $('#previewImage').html('<img src="' + tailInfo[0].machinePic + '">')
-        } else {
-          $('#chooseImage').html('拍照或从相册上传绣花机照片')
+        radioChooseExpressMethod.pickMethod = orderInfo[0].expressMethod
+        if (radioChooseExpressMethod.pickMethod == 'byHand') {
+          tailorExpressInfo.seen = false
         }
-        $('#inputMachineModel').val(tailInfo[0].machineModel)
-        $('#inputMobile').val(tailInfo[0].mobile)
-        $('#inputPrice').val(tailInfo[0].price)
-        $('#inputWechatId').val(tailInfo[0].wechatId)
-        $('#inputAddress').val(tailInfo[0].address)
-        $('#inputPostcode').val(tailInfo[0].postcode)
-        refreshShareTitle()
+        // refreshShareTitle()
       } else {
         console.log('none')
         $('#tailorState').html('状态：请填写资料')

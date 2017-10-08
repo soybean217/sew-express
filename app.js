@@ -539,11 +539,22 @@ function checkEditAuthorize(req, res, tag, success, fail) {
 
 function editValueAjax(req, res) {
 	if (!req.body) return res.sendStatus(400)
+	var currentTime = new Date().getTime() / 1000
 	if (req.body.id) {
-		checkEditAuthorize(req, res, ' editValueAjax ajax ', succ, fail)
+		checkEditAuthorize(req, res, ' editValueAjax ajax ', checkItem, fail)
 	} else {
 		logger.warn(' id not exist . ' + req.url + req.body)
 		return fail()
+	}
+
+
+
+	function checkItem(rows) {
+		if (',textContent,expressMethod,customerExpressInfo,'.indexOf(',' + req.body.item + ',') != -1) {
+			succ(rows)
+		} else {
+			fail();
+		}
 	}
 
 	function succ(rows) {
@@ -551,7 +562,7 @@ function editValueAjax(req, res) {
 			req.session.modifyTag = req.body.modifyTag - 1
 		}
 		if (req.body.modifyTag > req.session.modifyTag) {
-			poolConfig.query("UPDATE orders SET textContent=?,lastModifyTime=? WHERE id = ? ", [req.body.value, new Date().getTime() / 1000, req.body.id], function(err, rows, fields) {
+			poolConfig.query("UPDATE orders SET " + req.body.item + "=?,lastModifyTime=? WHERE id = ? ", [req.body.value, currentTime, req.body.id], function(err, rows, fields) {
 				if (err) {
 					logger.error(err)
 				} else {
@@ -581,7 +592,6 @@ function editTailorAjax(req, res) {
 	var tag = "editTailorAjax"
 	var item = ""
 	if (!req.body) return res.sendStatus(400)
-	logger.debug(tag)
 	checkItem()
 	var currentTime = new Date().getTime() / 1000
 
@@ -723,6 +733,17 @@ function listOrderByTailorAjax(req, res) {
 
 function getTailorInfoByUnionIdAjax(req, res) {
 	poolConfig.query("SELECT * FROM  tailors,tbl_wechat_users WHERE tailors.unionId =?  and tailors.unionId=tbl_wechat_users.unionid and appId=?", [req.query.tailorUnionId, CONFIG.WECHAT.APPID], function(err, rows, fields) {
+		if (err) {
+			logger.error(err)
+		} else {
+			res.send(JSON.stringify(rows))
+			res.end()
+		}
+	});
+}
+
+function getOrderInfoAjax(req, res) {
+	poolConfig.query("SELECT * FROM  orders WHERE id =? ", [req.query.orderId, CONFIG.WECHAT.APPID], function(err, rows, fields) {
 		if (err) {
 			logger.error(err)
 		} else {
@@ -1010,6 +1031,7 @@ app.post(CONFIG.DIR_FIRST + '/ajax/editTailorAjax', jsonParser, editTailorAjax);
 app.get(CONFIG.DIR_FIRST + '/ajax/listOrderByCustomerAjax', listOrderByCustomerAjax);
 app.get(CONFIG.DIR_FIRST + '/ajax/listOrderByTailorAjax', listOrderByTailorAjax);
 app.get(CONFIG.DIR_FIRST + '/ajax/getTailorInfoByUnionIdAjax', getTailorInfoByUnionIdAjax);
+app.get(CONFIG.DIR_FIRST + '/ajax/getOrderInfoAjax', getOrderInfoAjax);
 app.get(CONFIG.DIR_FIRST + '/ajax/tailorAjax', tailorAjax);
 app.get(CONFIG.DIR_FIRST + '/ajax/createUnifiedOrderAjax', createUnifiedOrderAjax);
 
