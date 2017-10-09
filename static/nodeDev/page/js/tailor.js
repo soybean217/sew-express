@@ -23,7 +23,7 @@ wx.ready(function() {
 		wx.openAddress({
 			success: function(res) {
 				// 用户成功拉出地址 
-				alert(JSON.stringify(res));
+				// alert(JSON.stringify(res));
 				// $('#addressContent').html('收货人姓名:' + res.userName)
 				if (res.errMsg == 'openAddress:ok') {
 					showAddress(res);

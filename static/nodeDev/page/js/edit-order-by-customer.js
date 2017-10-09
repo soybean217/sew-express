@@ -23,6 +23,8 @@ wx.ready(function() {
 
   getOrderInfo()
 
+  document.querySelector('#customerAddress').onclick = editCustomerAddress;
+
   document.querySelector('#chooseWXPay').onclick = function() {
     $.ajax({
       type: 'GET',
@@ -62,13 +64,26 @@ wx.ready(function() {
 
 });
 
-function chooseExpressMethod() {
-  console.log('onchange' + $('#x11').checked)
-  if ($('#x11').checked = true) {
-    $('#tailorExpressInfo').css("display", "inline")
-  } else {
-    $('#tailorExpressInfo').css("display", "none")
-  }
+function editCustomerAddress() {
+  wx.openAddress({
+    success: function(res) {
+      // 用户成功拉出地址 
+      // alert(JSON.stringify(res));
+      // $('#addressContent').html('收货人姓名:' + res.userName)
+      if (res.errMsg == 'openAddress:ok') {
+        showAddress(res);
+        editContent(JSON.stringify(res), 'orderByCustomer', 'customerExpressInfo')
+      }
+    },
+    cancel: function() {
+      // 用户取消拉出地址
+      console.log('cancel')
+    }
+  });
+}
+
+function showAddress(res) {
+  $('#addressContent').html('收货人姓名:' + res.userName + '<br>' + '邮编:' + res.postalCode + '<br>' + res.provinceName + ' ' + res.cityName + ' ' + res.countryName + ' ' + res.detailInfo + '<br>电话:' + res.telNumber + '')
 }
 
 function editContent(val, table, item) {
@@ -147,15 +162,17 @@ function getOrderInfo() {
       orderInfo = data
       console.log(data)
       if (data.length > 0) {
-        console.log('something')
         radioChooseExpressMethod.pickMethod = orderInfo[0].expressMethod
         if (radioChooseExpressMethod.pickMethod == 'byHand') {
           tailorExpressInfo.seen = false
         }
+        if (orderInfo[0].customerExpressInfo && orderInfo[0].customerExpressInfo.length > 0) {
+          var res = JSON.parse(orderInfo[0].customerExpressInfo);
+          showAddress(res);
+        }
         // refreshShareTitle()
       } else {
         console.log('none')
-        $('#tailorState').html('状态：请填写资料')
       }
       $('#loadingToast').css("display", "none")
         // $('.weui-cells').append(result);
