@@ -23,7 +23,6 @@ wx.ready(function() {
 
   getOrderInfo()
 
-  document.querySelector('#customerAddress').onclick = editCustomerAddress;
 
   document.querySelector('#chooseWXPay').onclick = function() {
     $.ajax({
@@ -71,7 +70,7 @@ function editCustomerAddress() {
       // alert(JSON.stringify(res));
       // $('#addressContent').html('收货人姓名:' + res.userName)
       if (res.errMsg == 'openAddress:ok') {
-        showAddress(res);
+        showCustomerAddress(res);
         editContent(JSON.stringify(res), 'orderByCustomer', 'customerExpressInfo')
       }
     },
@@ -82,8 +81,14 @@ function editCustomerAddress() {
   });
 }
 
-function showAddress(res) {
-  $('#addressContent').html('收货人姓名:' + res.userName + '<br>' + '邮编:' + res.postalCode + '<br>' + res.provinceName + ' ' + res.cityName + ' ' + res.countryName + ' ' + res.detailInfo + '<br>电话:' + res.telNumber + '')
+function showCustomerAddress(res) {
+  // $('#customerAddressContent').html('姓名:' + res.userName + '<br>' + '邮编:' + res.postalCode + '<br>' + res.provinceName + ' ' + res.cityName + ' ' + res.countryName + ' ' + res.detailInfo + '<br>电话:' + res.telNumber + '')
+  tailorExpressInfo.customerAddressInfo = '姓名:' + res.userName + '<br>' + '邮编:' + res.postalCode + '<br>' + res.provinceName + ' ' + res.cityName + ' ' + res.countryName + ' ' + res.detailInfo + '<br>电话:' + res.telNumber
+}
+
+function showTailorAddress(res) {
+  // $('#tailorAddressContent').html('请支付后将需要绣制衣物快递(请勿使用到付)到以下地址：<br>姓名:' + res.userName + '<br>' + '邮编:' + res.postalCode + '<br>' + res.provinceName + ' ' + res.cityName + ' ' + res.countryName + ' ' + res.detailInfo + '<br>电话:' + res.telNumber + '')
+  tailorExpressInfo.tailorAddressInfo = '请支付后将需要绣制衣物快递(请勿使用到付)到以下地址：<br>姓名:' + res.userName + '<br>' + '邮编:' + res.postalCode + '<br>' + res.provinceName + ' ' + res.cityName + ' ' + res.countryName + ' ' + res.detailInfo + '<br>电话:' + res.telNumber
 }
 
 function editContent(val, table, item) {
@@ -123,6 +128,8 @@ var orderInfo = null;
 var tailorExpressInfo = new Vue({
   el: '#tailorExpressInfo',
   data: {
+    tailorAddressInfo: '',
+    customerAddressInfo: '',
     seen: true,
   },
 })
@@ -140,6 +147,7 @@ var radioChooseExpressMethod = new Vue({
         tailorExpressInfo.seen = false
       } else {
         tailorExpressInfo.seen = true
+        showExpressDiv()
       }
       if (orderInfo && orderInfo[0].expressMethod != val) {
         this.canUpdate = true;
@@ -166,11 +174,8 @@ function getOrderInfo() {
         if (radioChooseExpressMethod.pickMethod == 'byHand') {
           tailorExpressInfo.seen = false
         }
-        if (orderInfo[0].customerExpressInfo && orderInfo[0].customerExpressInfo.length > 0) {
-          var res = JSON.parse(orderInfo[0].customerExpressInfo);
-          showAddress(res);
-        }
-        // refreshShareTitle()
+        showExpressDiv()
+          // refreshShareTitle()
       } else {
         console.log('none')
       }
@@ -183,6 +188,19 @@ function getOrderInfo() {
         // alert('Ajax error!');
     }
   });
+}
+
+function showExpressDiv() {
+  console.log('showExpressDiv')
+  if (orderInfo[0].customerExpressInfo && orderInfo[0].customerExpressInfo.length > 0) {
+    console.log('showExpressDiv customer')
+    var res = JSON.parse(orderInfo[0].customerExpressInfo);
+    showCustomerAddress(res);
+  }
+  if (orderInfo[0].tailorExpressInfo && orderInfo[0].tailorExpressInfo.length > 0) {
+    var res = JSON.parse(orderInfo[0].tailorExpressInfo);
+    showTailorAddress(res);
+  }
 }
 
 function refreshTitle() {
