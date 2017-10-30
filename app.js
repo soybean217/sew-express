@@ -349,6 +349,11 @@ function index(req, res) {
 	res.send('Hello World!');
 }
 
+function postTest(req, res) {
+	logger.debug(req.body)
+	res.send('ok');
+}
+
 function profile(req, res) {
 	poolConfig.query("SELECT *,ifnull(memberExpireTime,0) as memberExpireTime,ifnull(currentCapacity,0) as currentCapacity FROM tbl_wechat_users where openId=?", [req.session.wechatBase.openid], function(err, rows, fields) {
 		if (err) {
@@ -588,6 +593,26 @@ function editValueAjax(req, res) {
 	}
 }
 
+function addTextOrderByCustomerAjax(req, res) {
+	if (!req.body) return res.sendStatus(400)
+	var currentTime = new Date().getTime() / 1000
+	logger.debug(req.body)
+	poolConfig.query("insert orders (createTime,lastModifyTime,textContent,customerOpenId,tailorUnionId,orderPrice,tailorMobile,tailorAddress,tailorPostcode,tailorReceiver,tailorExpressInfo) select ?,?,?,?,unionid,price,mobile,address,postcode,realName,expressInfo from tailors where unionid=? ", [currentTime, currentTime, req.body.note, req.session.wechatBase.openid, req.query.tailorUnionId], function(err, rows, fields) {
+		if (err) {
+			logger.error(err)
+		} else {
+			if (rows.constructor.name == 'OkPacket') {
+				var sendContent = '{"status":"ok","location":"editOrderByCustomer?id=' + rows.insertId + '"}'
+				res.send(sendContent);
+				res.end()
+			} else {
+				logger.error('error customerUploadOriginPic books table:')
+				logger.error(rows)
+			}
+		}
+	});
+}
+
 function editTailorAjax(req, res) {
 	var tag = "editTailorAjax"
 	var item = ""
@@ -778,9 +803,13 @@ function createUnifiedOrderAjax(req, res) {
 	});
 
 	var ctime = new Date()
+	var out_trade_no = '' + ctime.getFullYear() + '-' + (ctime.getMonth() + 1) + '-' + ctime.getDate() + '-' + ctime.getHours() + '-' + ctime.getMinutes() + '-' + ctime.getSeconds() + '-' + Math.random().toString().substr(2, 10)
+	if (req.query.orderId) {
+		out_trade_no += '-' + req.query.orderId
+	}
 	var para = {
 		body: '服务费',
-		out_trade_no: '' + ctime.getFullYear() + '-' + (ctime.getMonth() + 1) + '-' + ctime.getDate() + '-' + ctime.getHours() + '-' + ctime.getMinutes() + '-' + ctime.getSeconds() + '-' + Math.random().toString().substr(2, 10) + '-' + req.query.orderId,
+		out_trade_no: out_trade_no,
 		total_fee: CONFIG.MEMBER_FEE,
 		spbill_create_ip: '127.0.0.1',
 		notify_url: 'http://' + CONFIG.DOMAIN + '/' + CONFIG.PAY_DIR_FIRST + '/notify',
@@ -1021,6 +1050,7 @@ function entanceTailor(req, res) {
 app.use(express.static(path.join(__dirname, 'static')));
 
 app.get(CONFIG.DIR_FIRST + '/', index);
+app.post(CONFIG.DIR_FIRST + '/', jsonParser, postTest);
 app.get(CONFIG.DIR_FIRST + '/page/signWechat.js', signOut);
 app.get(CONFIG.DIR_FIRST + '/page/editOrderByCustomer', editOrderByCustomer);
 app.get(CONFIG.DIR_FIRST + '/page/entanceTailor', entanceTailor);
@@ -1028,6 +1058,7 @@ app.get(CONFIG.DIR_FIRST + '/page/entanceTailor', entanceTailor);
 app.post(CONFIG.DIR_FIRST + '/ajax/picUploadAjax', jsonParser, picUploadAjax);
 app.post(CONFIG.DIR_FIRST + '/ajax/editValueAjax', jsonParser, editValueAjax);
 app.post(CONFIG.DIR_FIRST + '/ajax/editTailorAjax', jsonParser, editTailorAjax);
+app.post(CONFIG.DIR_FIRST + '/ajax/addTextOrderByCustomerAjax', jsonParser, addTextOrderByCustomerAjax);
 app.get(CONFIG.DIR_FIRST + '/ajax/listOrderByCustomerAjax', listOrderByCustomerAjax);
 app.get(CONFIG.DIR_FIRST + '/ajax/listOrderByTailorAjax', listOrderByTailorAjax);
 app.get(CONFIG.DIR_FIRST + '/ajax/getTailorInfoByUnionIdAjax', getTailorInfoByUnionIdAjax);

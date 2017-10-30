@@ -93,7 +93,7 @@ function getListRead() {
 				result += '<a href="editOrderByCustomer?id=' + row.id + '"><div class="weui-cell"><div class = "weui-cell__hd" style = "position: relative;margin-right: 10px;" ><img src = "' + row.originPic + '?imageView2/2/w/50"  style = "width: 50px;display: block" /></div><div class = "weui-cell__bd"><p style = "color: #000000;">' + row.textContent + '</p></div></div></a>'
 			})
 			$('#listRead').html(result);
-			getTailorInfoByUnionId(getUrlParam('tailorunionid'))
+			getTailorInfoByUnionId()
 		},
 		error: function(xhr, type) {
 			console.log(xhr)
@@ -104,15 +104,16 @@ function getListRead() {
 }
 
 var tailorUnionInfo
+var tailorUnionId = getUrlParam('tailorunionid')
+if (tailorUnionId == null || tailorUnionId.length <= 0) {
+	tailorUnionId = 'ort8d0sF-bwN95UQ2qkxcVLlWp3E'
+}
 
-function getTailorInfoByUnionId(unionId) {
-	if (unionId == null || unionId.length <= 0) {
-		unionId = 'ort8d0sF-bwN95UQ2qkxcVLlWp3E'
-	}
-	tailorUnionId = unionId
+
+function getTailorInfoByUnionId() {
 	$.ajax({
 		type: 'GET',
-		url: "../ajax/getTailorInfoByUnionIdAjax?tailorUnionId=" + unionId,
+		url: "../ajax/getTailorInfoByUnionIdAjax?tailorUnionId=" + tailorUnionId,
 		dataType: 'json',
 		success: function(data) {
 			console.log(data)
@@ -131,4 +132,8 @@ function getTailorInfoByUnionId(unionId) {
 				// alert('Ajax error!');
 		}
 	});
+}
+
+function sewOnlyWithText() {
+	location = "addTextOrderByCustomer.htm?tailorunionid=" + tailorUnionId
 }

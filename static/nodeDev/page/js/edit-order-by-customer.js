@@ -30,18 +30,6 @@ wx.ready(function() {
       url: "../ajax/createUnifiedOrderAjax?orderId=" + getUrlParam('id'),
       dataType: 'json',
       success: function(data) {
-        // alert(JSON.stringify(data))
-        console.log(data)
-
-        // var rev = JSON.parse(result);
-
-        // wx.chooseWXPay({
-        //   timestamp: data.timeStamp,
-        //   nonceStr: 'noncestr',
-        //   package: '',
-        //   signType: 'MDS', // 注意：新版支付接口使用 MD5 加密
-        //   paySign: 'bd5b1933cda6e9548862944836a9b52e8c9a2b69'
-        // });
         data.success = function(res) {
           // alert(JSON.stringify(res));
           //{"errMsg":"chooseWXPay:ok"}
@@ -191,9 +179,7 @@ function getOrderInfo() {
 }
 
 function showExpressDiv() {
-  console.log('showExpressDiv')
   if (orderInfo[0].customerExpressInfo && orderInfo[0].customerExpressInfo.length > 0) {
-    console.log('showExpressDiv customer')
     var res = JSON.parse(orderInfo[0].customerExpressInfo);
     showCustomerAddress(res);
   }
