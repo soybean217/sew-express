@@ -25,7 +25,6 @@ var logger = log4js.getLogger();
 // 	}]
 // })
 // logger.setLevel(CONFIG.LOG_LEVEL);
-// logger.appender.layout.pattern("[%h %x{pid}] - [%d] [%p] %c %m");
 var bodyParser = require('body-parser');
 var jsonParser = bodyParser.json();
 
